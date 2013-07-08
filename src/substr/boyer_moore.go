@@ -11,6 +11,7 @@ See: http://creativecommons.org/licenses/by-sa/3.0/
 package substr
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -26,7 +27,6 @@ const (
 
 // The error returned if an empty needle is provided to one of the search functions.
 var ErrEmptyNeedle = errors.New("boyer_moore: the needle may not be empty")
-
 
 // A processed version of the needle in which various tables have been
 // created that make the searching efficient (via Boyer-Moore algorithm).
@@ -122,7 +122,7 @@ func indexesWithinReaderHelp(haystack io.Reader, needle *Needle, stopAtFirst boo
 		}
 
 		offset := uint32(0)
-		var buffer [buffSize]byte
+		buffer := make([]byte, buffSize)
 		used := uint32(0)
 		done := false
 
@@ -140,7 +140,7 @@ func indexesWithinReaderHelp(haystack io.Reader, needle *Needle, stopAtFirst boo
 			} else {
 				done = true
 			}
-
+			buffer = bytes.ToLower(buffer)
 			haystackSkip := uint32(0)
 			for {
 				index := indexOfHelper(buffer[0:used], needle, used, haystackSkip)
@@ -308,7 +308,6 @@ func suffixLength(needle []byte, p int) int {
 	}
 	return length
 }
-
 
 // Given a channel of Result/s returns the first Result and insures that no
 // more are returned (if there is another result, it panics).
